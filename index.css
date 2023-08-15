@@ -21,18 +21,6 @@ p {
 
 /* Layout */
 
-/* .logo {
-    font-size: 35px;
-    font-weight: 700;
-    width: 50px;
-    height: 50px;
-    cursor: pointer;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-} */
-
 .container {
     width: auto;
     max-width: 598px;
@@ -49,6 +37,7 @@ p {
 .row-flex {
     display: flex;
     flex-direction: row;
+    justify-content: center;
 }
 
 .profile-pic {
@@ -98,6 +87,73 @@ button {
     align-self: flex-end;
 }
 
+.logo{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    font-size: 30px;
+    font-weight: bolder;
+    border-radius: 50%;
+}
+
+nav{
+    width: 260px;
+}
+
+ul {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 0px;
+    padding: 0 8px;
+    list-style: none;
+}
+
+li,
+.close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px;
+    font-size: 20px;
+    border-radius: 40px;
+    cursor: pointer;
+}
+
+.close-btn {
+    font-size: 15px;
+    font-weight: bold;
+}
+
+li:hover,
+.close-btn:hover{
+    background-color: #2f3336;
+}
+
+li i {
+    font-size: 20px;
+    padding: 0;
+    display: flex;
+}
+
+.show {
+    display: flex;
+}
+
+@media screen and (max-width:860px) {
+    nav {
+        width: auto;
+    }
+
+    .show {
+        display: none;
+    }
+}
+
 /* icons */
 
 i {
@@ -131,6 +187,16 @@ i {
     background-color: #f9188136;
 }
 
+.liked,
+.tweet-detail.liked{
+    color: #f91880;
+}
+
+.retweeted,
+.tweet-detail.retweeted{
+    color: #00ba7c;
+}
+
 /* tweet */
 
 .tweet{
@@ -162,11 +228,13 @@ i {
     cursor: pointer;
 }
 
-.tweet-reply{
-    border-top: 1px solid lightgray;
+.tweet-reply .tweet-inner{
+    /* border-top: 1px solid lightgray;
     padding: 20px 0 0 0px;
     margin: 10px 0 10px 40px;
-    width: 80%;
+    width: 80%; */
+    padding-bottom: 8px;
+    padding-left: 55px;
 }
 
 .handle{
@@ -178,4 +246,19 @@ i {
 .tweet-text{
     margin-top: 5px;
     line-height: 20px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Modal */
+
+.reply-container {
+    padding-left: 75px;
+    padding-bottom: 8px;
+}
+
+.reply-container textarea {
+    font-size: 15px;
 }

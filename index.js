@@ -1,15 +1,21 @@
 import { tweetsData } from "./data.js"
-
-const tweetInput = document.getElementById("tweet-input")
-const tweetBtn = document.getElementById("tweet-btn")
-
-tweetBtn.addEventListener("click", function(){
-    console.log(tweetInput.value)
-})
+import { v4 as uuidv4 } from 'https://jspm.dev/uuid';
 
 document.addEventListener('click', function(e){
     if(e.target.dataset.like){
         handleLikeClick(e.target.dataset.like)
+    } 
+    else if (e.target.dataset.retweet){
+        handleRetweetClick(e.target.dataset.retweet)
+    }
+    else if (e.target.dataset.reply){
+        handleReplyClick(e.target.dataset.reply)
+    }
+    else if (e.target.id === 'tweet-btn'){
+        handleTweetBtnClick()
+    }
+    else if (e.target.dataset.replyBtn){
+        handleReplyBtnClick(e.target.dataset.replyBtn)
     }
 })
 
@@ -21,13 +27,83 @@ function handleLikeClick(tweetId){
 
     if(!targetTweetObject.isLiked){
         targetTweetObject.likes++
-        targetTweetObject.isLiked = true
     }else{
         targetTweetObject.likes--
-        targetTweetObject.isLiked = false
     }
+    
+    targetTweetObject.isLiked = !targetTweetObject.isLiked
 
     render()
+
+    console.log(targetTweetObject)
+}
+
+function handleRetweetClick(tweetId){
+
+    const targetTweetObject = tweetsData.filter(function(tweet){
+        return tweet.uuid === tweetId
+    })[0]
+
+    if(targetTweetObject.isRetweeted){
+        targetTweetObject.retweets--
+    } else {
+        targetTweetObject.retweets++
+    }
+
+    targetTweetObject.isRetweeted = !targetTweetObject.isRetweeted
+    render()
+}
+
+function handleReplyClick(replyId){
+    document.getElementById(`replies-${replyId}`).classList.toggle('hidden')
+    
+    let targetTweetObject = tweetsData.filter(function(tweet){
+        return tweet.uuid === replyId
+    })[0]
+
+    targetTweetObject.repliesHidden = !targetTweetObject.repliesHidden
+}
+
+function handleTweetBtnClick(){
+    const tweetInput = document.getElementById("tweet-input")
+
+    if(tweetInput.value!=''){
+        tweetsData.unshift({
+            handle: `@efrvame`,
+            profilePic: `images/avatar.jpg`,
+            likes: 0,
+            retweets: 0,
+            tweetText: tweetInput.value,
+            replies: [],
+            repliesHidden: true,
+            isLiked: false,
+            isRetweeted: false,
+            uuid: uuidv4(),
+        })
+
+        render()
+        tweetInput.value = ''
+    }
+}
+
+function handleReplyBtnClick(replyId){
+    let replyInput = document.getElementById(`modal-input-${replyId}`)
+    
+    let targetTweetObject = tweetsData.filter(function(tweet){
+        return tweet.uuid === replyId
+    })[0]
+
+    targetTweetObject.replies.unshift(
+        {
+            handle: `@efrvame`,
+            profilePic: `images/avatar.jpg`,
+            tweetText: replyInput.value,
+        }
+    )
+    
+    targetTweetObject.repliesHidden = false
+    render()
+    replyInput.value = ''
 }
 
 function getFeedHtml() {
@@ -37,6 +113,29 @@ function getFeedHtml() {
         let tweetLikes = tweet.likes>0 ? tweet.likes : ''
         let tweetReplies = tweet.replies.length>0 ? tweet.replies.length : ''
         let tweetRetweets = tweet.retweets>0 ? tweet.retweets : ''
+
+        let likeIconClass = tweet.isLiked ? 'liked' : ''
+        let retweetIconClass = tweet.isRetweeted ? 'retweeted' : ''
+        let heartIconClass = tweet.isLiked ? 'fa-solid' : 'fa-regular'
+        
+        let repliesHiddenClass = tweet.repliesHidden ? "hidden" : ""
+        let repliesHtml = ''
+    
+        if (tweet.replies.length > 0){
+            tweet.replies.forEach(function(reply){
+                repliesHtml += `
+                <div class="tweet-reply container">
+                    <div class="tweet-inner">
+                        <img src="${reply.profilePic}" class="profile-pic">
+                            <div>
+                                <p class="handle">${reply.handle}</p>
+                                <p class="tweet-text">${reply.tweetText}</p>
+                            </div>
+                        </div>
+                </div>
+                `
+            })
+        }
 
         feedHtml += `
         <div class="tweet container">
@@ -50,12 +149,12 @@ function getFeedHtml() {
                             <i class="fa-regular fa-comment" data-reply="${tweet.uuid}"></i>
                             ${tweetReplies}
                         </span>
-                        <span class="tweet-detail green" data-retweet="${tweet.uuid}">
+                        <span class="tweet-detail green ${retweetIconClass}" data-retweet="${tweet.uuid}">
                             <i class="fa-solid fa-retweet" data-retweet="${tweet.uuid}"></i>
                             ${tweetRetweets}
                         </span>
-                        <span class="tweet-detail red" data-like="${tweet.uuid}">
-                            <i class="fa-regular fa-heart" data-like="${tweet.uuid}"></i>
+                        <span class="tweet-detail red ${likeIconClass}" data-like="${tweet.uuid}">
+                            <i class="${heartIconClass} fa-heart" data-like="${tweet.uuid}"></i>
                             ${tweetLikes}
                         </span>
                         <span class="tweet-detail blue">
@@ -67,6 +166,21 @@ function getFeedHtml() {
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="${repliesHiddenClass}" id="replies-${tweet.uuid}">
+            <div class="container reply-container col-flex">
+                <div class="tweet-input-area">
+                    <img src="images/avatar.jpg" class="profile-pic">
+                    <textarea placeholder="Post your reply!" id="modal-input-${tweet.uuid}"></textarea>
+                </div>
+                <button
+                    id="reply-btn-${tweet.uuid}"
+                    data-reply-btn="${tweet.uuid}"
+                    >
+                    Reply
+                </button>
+            </div>
+            ${repliesHtml}
         </div>
         `
     })
