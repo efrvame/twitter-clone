@@ -17,13 +17,14 @@ document.addEventListener('click', function(e){
     else if (e.target.dataset.replyBtn){
         handleReplyBtnClick(e.target.dataset.replyBtn)
     }
+    else if (e.target.dataset.delete){
+        handleDeleteClick(e.target.dataset.delete)
+    }
 })
 
 function handleLikeClick(tweetId){
     
-    const targetTweetObject = tweetsData.filter(function(tweet){
-        return tweet.uuid === tweetId
-    })[0]
+    const targetTweetObject = getTweetObject(tweetId)
 
     if(!targetTweetObject.isLiked){
         targetTweetObject.likes++
@@ -34,15 +35,11 @@ function handleLikeClick(tweetId){
     targetTweetObject.isLiked = !targetTweetObject.isLiked
 
     render()
-
-    console.log(targetTweetObject)
 }
 
 function handleRetweetClick(tweetId){
 
-    const targetTweetObject = tweetsData.filter(function(tweet){
-        return tweet.uuid === tweetId
-    })[0]
+    const targetTweetObject = getTweetObject(tweetId)
 
     if(targetTweetObject.isRetweeted){
         targetTweetObject.retweets--
@@ -57,9 +54,7 @@ function handleRetweetClick(tweetId){
 function handleReplyClick(replyId){
     document.getElementById(`replies-${replyId}`).classList.toggle('hidden')
     
-    let targetTweetObject = tweetsData.filter(function(tweet){
-        return tweet.uuid === replyId
-    })[0]
+    let targetTweetObject = getTweetObject(tweetId)
 
     targetTweetObject.repliesHidden = !targetTweetObject.repliesHidden
 }
@@ -89,9 +84,7 @@ function handleTweetBtnClick(){
 function handleReplyBtnClick(replyId){
     let replyInput = document.getElementById(`modal-input-${replyId}`)
     
-    let targetTweetObject = tweetsData.filter(function(tweet){
-        return tweet.uuid === replyId
-    })[0]
+    let targetTweetObject = getTweetObject(tweetId)
 
     targetTweetObject.replies.unshift(
         {
@@ -104,6 +97,22 @@ function handleReplyBtnClick(replyId){
     targetTweetObject.repliesHidden = false
     render()
     replyInput.value = ''
+}
+
+function handleDeleteClick(tweetId){
+    
+    let tweetIndex = tweetsData.findIndex(function(tweet){
+        return tweet.uuid === tweetId
+    })
+
+    tweetsData.splice(tweetIndex, 1)
+    render()
+}
+
+function getTweetObject(uuid){
+    return tweetsData.filter(function(tweet){
+        return tweet.uuid === uuid
+    })[0]
 }
 
 function getFeedHtml() {
@@ -166,6 +175,10 @@ function getFeedHtml() {
                     </div>
                 </div>
             </div>
+            <i 
+                class="fa-solid fa-xmark blue delete-tweet"
+                data-delete="${tweet.uuid}"
+                ></i>
         </div>
         <div class="${repliesHiddenClass}" id="replies-${tweet.uuid}">
             <div class="container reply-container col-flex">
