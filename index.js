@@ -1,6 +1,16 @@
 import { tweetsData } from "./data.js"
 import { v4 as uuidv4 } from 'https://jspm.dev/uuid';
 
+/* localStorage.setItem("myTweets", JSON.stringify(tweetsData)) */
+
+let localTweets
+
+if(localStorage.getItem("myTweets")){
+    localTweets = JSON.parse(localStorage.getItem("myTweets"))    
+} else {
+    localTweets = tweetsData
+}
+
 document.addEventListener('click', function(e){
     if(e.target.dataset.like){
         handleLikeClick(e.target.dataset.like)
@@ -54,16 +64,17 @@ function handleRetweetClick(tweetId){
 function handleReplyClick(replyId){
     document.getElementById(`replies-${replyId}`).classList.toggle('hidden')
     
-    let targetTweetObject = getTweetObject(tweetId)
+    let targetTweetObject = getTweetObject(replyId)
 
     targetTweetObject.repliesHidden = !targetTweetObject.repliesHidden
+    render()
 }
 
 function handleTweetBtnClick(){
     const tweetInput = document.getElementById("tweet-input")
 
     if(tweetInput.value!=''){
-        tweetsData.unshift({
+        localTweets.unshift({
             handle: `@efrvame`,
             profilePic: `images/avatar.jpg`,
             likes: 0,
@@ -84,33 +95,35 @@ function handleTweetBtnClick(){
 function handleReplyBtnClick(replyId){
     let replyInput = document.getElementById(`modal-input-${replyId}`)
     
-    let targetTweetObject = getTweetObject(tweetId)
+    if(replyInput.value){
+        let targetTweetObject = getTweetObject(replyId)
 
-    targetTweetObject.replies.unshift(
-        {
-            handle: `@efrvame`,
-            profilePic: `images/avatar.jpg`,
-            tweetText: replyInput.value,
-        }
-    )
-    
-    targetTweetObject.repliesHidden = false
-    render()
-    replyInput.value = ''
+        targetTweetObject.replies.unshift(
+            {
+                handle: `@efrvame`,
+                profilePic: `images/avatar.jpg`,
+                tweetText: replyInput.value,
+            }
+        )
+        
+        targetTweetObject.repliesHidden = false
+        render()
+        replyInput.value = ''
+    }
 }
 
 function handleDeleteClick(tweetId){
     
-    let tweetIndex = tweetsData.findIndex(function(tweet){
+    let tweetIndex = localTweets.findIndex(function(tweet){
         return tweet.uuid === tweetId
     })
 
-    tweetsData.splice(tweetIndex, 1)
+    localTweets.splice(tweetIndex, 1)
     render()
 }
 
 function getTweetObject(uuid){
-    return tweetsData.filter(function(tweet){
+    return localTweets.filter(function(tweet){
         return tweet.uuid === uuid
     })[0]
 }
@@ -118,7 +131,7 @@ function getTweetObject(uuid){
 function getFeedHtml() {
     let feedHtml = ``
     
-    tweetsData.forEach(function(tweet){
+    localTweets.forEach(function(tweet){
         let tweetLikes = tweet.likes>0 ? tweet.likes : ''
         let tweetReplies = tweet.replies.length>0 ? tweet.replies.length : ''
         let tweetRetweets = tweet.retweets>0 ? tweet.retweets : ''
@@ -203,6 +216,7 @@ function getFeedHtml() {
 
 function render() {
     document.getElementById("feed").innerHTML = getFeedHtml()
+    localStorage.setItem("myTweets", JSON.stringify(localTweets))
 }
 
 render()
